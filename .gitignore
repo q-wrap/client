@@ -1,4 +1,5 @@
 /venv/
+/circuits/test/
 
 /.idea/
 /.vscode/
