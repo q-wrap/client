@@ -64,8 +64,15 @@ def download_openqasm3_circuits():
     _download_circuits(url, files, local_path)
 
 
-def select_device(openqasm_circuit: str) -> dict:
-    response = requests.post(f"{API_URL}/select", json={"openqasm_circuit": openqasm_circuit})
+def select_device(openqasm_circuit: str, openqasm_version: int = None) -> dict:
+    request_data = {
+        "openqasm_circuit": openqasm_circuit
+    }
+
+    if openqasm_version is not None:
+        request_data["openqasm_version"] = openqasm_version
+
+    response = requests.post(f"{API_URL}/select", json=request_data)
 
     if response.status_code != 200:
         raise ValueError(f"Failed to select device: {response.status_code}\n{response.text}")
@@ -73,28 +80,28 @@ def select_device(openqasm_circuit: str) -> dict:
     return response.json()
 
 
-def _test_circuits(directory: str):
+def _test_circuits(directory: str, openqasm_version: int = None):
     for file in os.listdir(directory):
         if file.endswith(".qasm"):
             print(f"{file}")
             with open(os.path.join(directory, os.path.basename(file)), 'r') as f:
                 openqasm_circuit = f.read()
-                print(select_device(openqasm_circuit))
-
-
-def test_openqasm3_circuits():
-    print("Testing OpenQASM 3 circuits:")
-    _test_circuits(os.path.join(BASE_FOLDER, "openqasm3"))
+                print(select_device(openqasm_circuit, openqasm_version))
 
 
 def test_openqasm2_circuits():
     print("Testing OpenQASM 2 circuits:")
-    _test_circuits(os.path.join(BASE_FOLDER, "openqasm2"))
+    _test_circuits(os.path.join(BASE_FOLDER, "openqasm2"), 2)
+
+
+def test_openqasm3_circuits():
+    print("Testing OpenQASM 3 circuits:")
+    _test_circuits(os.path.join(BASE_FOLDER, "openqasm3"), 3)
 
 
 if __name__ == '__main__':
     # download_openqasm2_circuits()
     # download_openqasm3_circuits()
 
-    test_openqasm2_circuits()
-    # test_openqasm3_circuits()
+    # test_openqasm2_circuits()
+    test_openqasm3_circuits()
