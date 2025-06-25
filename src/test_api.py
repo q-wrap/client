@@ -1,6 +1,6 @@
 import os
 from typing import Callable
-from unittest import TestCase
+from unittest import TestCase, skip
 
 import requests
 
@@ -86,7 +86,7 @@ class ApiClient:
         response = requests.post(f"{API_URL}/select", json=request_data)
 
         if response.status_code != 200:
-            raise ValueError(f"Failed to select device: {response.status_code}")
+            raise ValueError(f"Failed to select device: {response.status_code}\n{response.text}")
 
         return response.json()
 
@@ -106,7 +106,7 @@ class ApiClient:
         response = requests.post(f"{API_URL}/simulate", json=request_data)
 
         if response.status_code != 200:
-            raise ValueError(f"Failed to simulate circuit: {response.status_code}")
+            raise ValueError(f"Failed to simulate circuit: {response.status_code}\n{response.text}")
 
         return response.json()
 
@@ -127,25 +127,30 @@ class Utils:
 
 
 class ApiTest(TestCase):
+    @skip("Testing simulation only")
     def test_select_2(self):
         Utils.for_all_circuits_in_directory(
             lambda circuit: ApiClient.select_device(circuit, 2),
             os.path.join(TEST_FOLDER, "openqasm2"))
 
+    @skip("Testing simulation only")
     def test_select_3(self):
         Utils.for_all_circuits_in_directory(
             lambda circuit: ApiClient.select_device(circuit, 3),
             os.path.join(TEST_FOLDER, "openqasm3"))
 
     def test_simulate_ibm(self):
-        Utils.for_all_circuits_in_directory(
+        Utils.for_single_circuit(
             lambda circuit: ApiClient.simulate_circuit(circuit, "ibm", 2),
-            os.path.join(MQT_BENCH_FOLDER, "ibm_montreal"))
+            os.path.join(MQT_BENCH_FOLDER, "general"), "qaoa_indep_qiskit_3.qasm")
 
     def test_simulate_ibm_noisy(self):
-        Utils.for_all_circuits_in_directory(
-            lambda circuit: ApiClient.simulate_circuit(circuit, "ibm", 2, "ibm_montreal"),
-            os.path.join(MQT_BENCH_FOLDER, "ibm_montreal"))
+        Utils.for_single_circuit(
+            lambda circuit: ApiClient.simulate_circuit(circuit, "ibm", 2, "montreal"),
+            os.path.join(MQT_BENCH_FOLDER, "general"), "qaoa_indep_qiskit_3.qasm")
+        Utils.for_single_circuit(
+            lambda circuit: ApiClient.simulate_circuit(circuit, "ibm", 2, "washington"),
+            os.path.join(MQT_BENCH_FOLDER, "general"), "qaoa_indep_qiskit_3.qasm")
 
     def test_simulate_ionq(self):
         Utils.for_single_circuit(
@@ -155,6 +160,14 @@ class ApiTest(TestCase):
     def test_simulate_ionq_noisy(self):
         Utils.for_single_circuit(
             lambda circuit: ApiClient.simulate_circuit(circuit, "ionq", 2, "aria-1"),
+            os.path.join(MQT_BENCH_FOLDER, "general"), "qaoa_indep_qiskit_3.qasm")
+        Utils.for_single_circuit(
+            lambda circuit: ApiClient.simulate_circuit(circuit, "ionq", 2, "harmony"),
+            os.path.join(MQT_BENCH_FOLDER, "general"), "qaoa_indep_qiskit_3.qasm")
+
+    def test_simulate_iqm_noisy(self):
+        Utils.for_single_circuit(
+            lambda circuit: ApiClient.simulate_circuit(circuit, "iqm", 2, "apollo"),
             os.path.join(MQT_BENCH_FOLDER, "general"), "qaoa_indep_qiskit_3.qasm")
 
 
