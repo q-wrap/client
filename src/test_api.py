@@ -144,10 +144,12 @@ class ApiTest(TestCase):
             lambda circuit: ApiClient.simulate_circuit(circuit, "ibm", 2),
             os.path.join(MQT_BENCH_FOLDER, "general"), "qaoa_indep_qiskit_3.qasm")
 
-    def test_simulate_ibm_noisy(self):
+    def test_simulate_ibm_noisy_montreal(self):
         Utils.for_single_circuit(
             lambda circuit: ApiClient.simulate_circuit(circuit, "ibm", 2, "montreal"),
             os.path.join(MQT_BENCH_FOLDER, "general"), "qaoa_indep_qiskit_3.qasm")
+
+    def test_simulate_ibm_noisy_washington(self):
         Utils.for_single_circuit(
             lambda circuit: ApiClient.simulate_circuit(circuit, "ibm", 2, "washington"),
             os.path.join(MQT_BENCH_FOLDER, "general"), "qaoa_indep_qiskit_3.qasm")
@@ -157,15 +159,18 @@ class ApiTest(TestCase):
             lambda circuit: ApiClient.simulate_circuit(circuit, "ionq", 2),
             os.path.join(MQT_BENCH_FOLDER, "general"), "qaoa_indep_qiskit_3.qasm")
 
-    def test_simulate_ionq_noisy(self):
+    def test_simulate_ionq_noisy_aria(self):
         Utils.for_single_circuit(
             lambda circuit: ApiClient.simulate_circuit(circuit, "ionq", 2, "aria-1"),
             os.path.join(MQT_BENCH_FOLDER, "general"), "qaoa_indep_qiskit_3.qasm")
+
+    @skip("Simulation on IonQ Harmony currently takes very long")
+    def test_simulate_ionq_noisy_harmony(self):
         Utils.for_single_circuit(
             lambda circuit: ApiClient.simulate_circuit(circuit, "ionq", 2, "harmony"),
             os.path.join(MQT_BENCH_FOLDER, "general"), "qaoa_indep_qiskit_3.qasm")
 
-    def test_simulate_iqm_noisy(self):
+    def test_simulate_iqm_noisy_apollo(self):
         Utils.for_single_circuit(
             lambda circuit: ApiClient.simulate_circuit(circuit, "iqm", 2, "apollo"),
             os.path.join(MQT_BENCH_FOLDER, "general"), "qaoa_indep_qiskit_3.qasm")
