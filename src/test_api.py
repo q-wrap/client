@@ -4,7 +4,8 @@ from unittest import TestCase, skip
 
 import requests
 
-API_URL = "http://127.0.0.1:5000"
+from api_client import ApiClient
+
 TEST_FOLDER = "../circuits/test"
 MQT_BENCH_FOLDER = "../circuits/mqt_bench"
 
@@ -71,44 +72,6 @@ class Downloader:
         local_path = os.path.join(TEST_FOLDER, "openqasm3")
 
         cls._download_circuits(url, files, local_path)
-
-
-class ApiClient:
-    @staticmethod
-    def select_device(openqasm_circuit: str, openqasm_version: int = None) -> dict:
-        request_data = {
-            "openqasm_circuit": openqasm_circuit
-        }
-
-        if openqasm_version is not None:
-            request_data["openqasm_version"] = openqasm_version
-
-        response = requests.post(f"{API_URL}/select", json=request_data)
-
-        if response.status_code != 200:
-            raise ValueError(f"Failed to select device: {response.status_code}\n{response.text}")
-
-        return response.json()
-
-    @staticmethod
-    def simulate_circuit(openqasm_circuit: str, vendor: str, openqasm_version: int = None,
-                         noisy_backend: str = None) -> dict:
-        request_data = {
-            "openqasm_circuit": openqasm_circuit,
-            "vendor": vendor,
-        }
-
-        if openqasm_version is not None:
-            request_data["openqasm_version"] = openqasm_version
-        if noisy_backend is not None:
-            request_data["noisy_backend"] = noisy_backend
-
-        response = requests.post(f"{API_URL}/simulate", json=request_data)
-
-        if response.status_code != 200:
-            raise ValueError(f"Failed to simulate circuit: {response.status_code}\n{response.text}")
-
-        return response.json()
 
 
 class Utils:
