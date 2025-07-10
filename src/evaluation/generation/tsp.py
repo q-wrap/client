@@ -7,7 +7,7 @@ import qiskit
 from qiskit import qasm2
 from qiskit.primitives import Sampler
 from qiskit_algorithms import QAOA
-from qiskit_algorithms.optimizers import Optimizer
+from qiskit_algorithms.optimizers import Optimizer, SPSA
 from qiskit_optimization.applications import Tsp
 from qiskit_optimization.converters import QuadraticProgramToQubo
 
@@ -15,23 +15,33 @@ from .generator import CircuitGenerator
 
 
 class TspCircuitGenerator(CircuitGenerator):
-    def __init__(self, number_of_cities: int, seed: int):
+    def __init__(self, number_of_cities: int, seed: int = None):
         self.instance = Tsp.create_random_instance(number_of_cities, seed=seed)
 
     def generate_openqasm(self, optimizer: type(Optimizer), optimizer_iterations: int, qaoa_iterations: int,
-                          qubo_penalty: float = None) -> str:
+                          qubo_penalty: float | None = None) -> str:
         qp = self.instance.to_quadratic_program()
         # qp.minimize(constant=0, linear={"x_0_0": 1e8})
-        qp.linear_constraint(
-            linear={"x_0_0": 1},
-            sense="==",
-            rhs=0,
-            name="start_city_constraint",
-        )  # avoid bitwise NOT of correct solutions by permitting self-loop at first city
+        # qp.linear_constraint(
+        #     linear={"x_0_0": 1},
+        #     sense="==",
+        #     rhs=0,
+        #     name="start_city_constraint",
+        # )  # avoid bitwise NOT of correct solutions by permitting self-loop at first city
 
         qubo = QuadraticProgramToQubo(penalty=qubo_penalty).convert(qp)
         operator, _ = qubo.to_ising()
-        qaoa = QAOA(sampler=Sampler(), optimizer=optimizer(maxiter=optimizer_iterations), reps=qaoa_iterations)
+        if optimizer == SPSA:
+            qaoa = QAOA(sampler=Sampler(), optimizer=optimizer(
+                maxiter=optimizer_iterations,
+                learning_rate=0.3,
+                perturbation=0.05,
+            ), reps=qaoa_iterations)
+        else:
+            qaoa = QAOA(sampler=Sampler(), optimizer=optimizer(
+                maxiter=optimizer_iterations,
+            ), reps=qaoa_iterations)
+
 
         optimal_params = qaoa.compute_minimum_eigenvalue(operator).optimal_point
         circuit = qaoa.ansatz.assign_parameters(optimal_params)
@@ -83,8 +93,14 @@ class TspCircuitGenerator(CircuitGenerator):
 
     @staticmethod
     def matrix_to_tour(matrix_bitstring: str) -> tuple[int, ...]:
-        n = math.isqrt(len(matrix_bitstring))
+        n = math.sqrt(len(matrix_bitstring))
+        if not n.is_integer():
+            raise ValueError("Invalid matrix bitstring: Length must be a perfect square.")
+
+        n = int(n)
         matrix = numpy.fromiter((int(b) for b in matrix_bitstring), dtype=int).reshape((n, n))
+        if not (numpy.all(matrix.sum(axis=0) == 1) and numpy.all(matrix.sum(axis=1) == 1)):
+            raise ValueError("Invalid matrix bitstring: Each city must be arrived and departed exactly once.")
 
         tour = [0]
         visited = {0}
@@ -93,9 +109,17 @@ class TspCircuitGenerator(CircuitGenerator):
             next_city = next((j for j in range(n) if matrix[tour[-1], j] == 1 and j not in visited), None)
 
             if next_city is None:
-                raise ValueError("No valid tour found in matrix bitstring.")
+                raise ValueError("Invalid matrix bitstring: No Hamiltonian cycle found.")
 
             tour.append(next_city)
             visited.add(next_city)
 
         return tuple(tour)
+
+    @classmethod
+    def check_for_valid_tour(cls, matrix_bitstring: str) -> bool:
+        try:
+            cls.matrix_to_tour(matrix_bitstring)
+            return True
+        except ValueError:
+            return False
