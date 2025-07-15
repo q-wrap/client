@@ -15,7 +15,7 @@ from .generator import CircuitGenerator
 
 
 class TspCircuitGenerator(CircuitGenerator):
-    def __init__(self, number_of_cities: int, seed: int = None):
+    def __init__(self, number_of_cities: int, seed: int | None = None):
         self.instance = Tsp.create_random_instance(number_of_cities, seed=seed)
 
     def generate_openqasm(self,
