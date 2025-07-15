@@ -8,12 +8,27 @@ from api_client import ApiClient
 from generation import TspCircuitGenerator
 
 
-def show_histogram(counts: dict[str, int], title: str = ""):
+def show_histogram(counts: dict[str, int], title: str = "", highlight_x: set[str] | None = None):
     plot_histogram(counts)
-    plt.gca().set_ylabel("")
-    plt.subplots_adjust(top=0.93, right=0.98, left=0.07, bottom=0.12)
+
+    axis = plt.gca()
+    axis.set_ylabel("")
+
+    if highlight_x is not None:
+        highlight_x_not = {"".join("1" if bit == "0" else "0" for bit in bitstring) for bitstring in highlight_x}
+
+        for bar, x in zip(axis.patches, counts.keys()):
+            if x in highlight_x:
+                bar.set_facecolor("green")
+            elif x in highlight_x_not:
+                bar.set_facecolor("darkred")
+
     if title:
+        plt.subplots_adjust(top=0.93, right=0.98, left=0.07, bottom=0.12)
         plt.title(title, fontsize=12)
+    else:
+        plt.subplots_adjust(top=0.98, right=0.98, left=0.07, bottom=0.12)
+
     plt.show()
 
 
@@ -32,8 +47,7 @@ def evaluate_counts(counts: dict[str, int], solutions: set[str]) -> tuple[int, i
     return correct_counts, all_counts, correct_counts / all_counts
 
 
-def evaluate_tsp():
-    seed = 123
+def evaluate_tsp(seed: int):
     tsp = TspCircuitGenerator(2, seed)
     tsp_solution = tsp.solution_to_bitstrings(tsp.solve_by_brute_force())
     print(f"optimal solution: {tsp_solution}")
@@ -102,11 +116,12 @@ def evaluate_single_tsp(circuit: str, tsp: TspCircuitGenerator, tsp_solution: se
     counts = ApiClient.simulate_circuit(circuit, vendor, noisy_backend=noisy_backend)["counts"]
     if filtering:
         counts = filter_counts(tsp.check_for_valid_tour, counts)
-    show_histogram(counts, title)
+    show_histogram(counts, title, tsp_solution)
 
     right_counts, all_counts, percentage = evaluate_counts(counts, tsp_solution)
     print(f"correct results: {right_counts} out of {all_counts} ({percentage * 100:.2f} %)")
 
 
 if __name__ == '__main__':
-    evaluate_tsp()
+    for seed in [123, 456, 789]:
+        evaluate_tsp(seed)
