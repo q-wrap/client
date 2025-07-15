@@ -18,24 +18,22 @@ class TspCircuitGenerator(CircuitGenerator):
     def __init__(self, number_of_cities: int, seed: int = None):
         self.instance = Tsp.create_random_instance(number_of_cities, seed=seed)
 
-    def generate_openqasm(self, optimizer: type(Optimizer), optimizer_iterations: int, qaoa_iterations: int,
-                          qubo_penalty: float | None = None) -> str:
+    def generate_openqasm(self,
+                          optimizer: type(Optimizer),
+                          optimizer_iterations: int,
+                          qaoa_iterations: int,
+                          qubo_penalty: float | None = None,
+                          optimizer_learning_rate: float | None = None,
+                          optimizer_perturbation: float | None = None,
+                          ) -> str:
         qp = self.instance.to_quadratic_program()
-        # qp.minimize(constant=0, linear={"x_0_0": 1e8})
-        # qp.linear_constraint(
-        #     linear={"x_0_0": 1},
-        #     sense="==",
-        #     rhs=0,
-        #     name="start_city_constraint",
-        # )  # avoid bitwise NOT of correct solutions by permitting self-loop at first city
-
         qubo = QuadraticProgramToQubo(penalty=qubo_penalty).convert(qp)
         operator, _ = qubo.to_ising()
         if optimizer == SPSA:
             qaoa = QAOA(sampler=Sampler(), optimizer=optimizer(
                 maxiter=optimizer_iterations,
-                learning_rate=0.3,
-                perturbation=0.05,
+                learning_rate=optimizer_learning_rate,
+                perturbation=optimizer_perturbation,
             ), reps=qaoa_iterations)
         else:
             qaoa = QAOA(sampler=Sampler(), optimizer=optimizer(
