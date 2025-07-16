@@ -90,13 +90,12 @@ class Utils:
 
 
 class ApiTest(TestCase):
-    @skip("Testing simulation only")
     def test_select_2(self):
         Utils.for_all_circuits_in_directory(
             lambda circuit: ApiClient.select_device(circuit, 2),
             os.path.join(TEST_FOLDER, "openqasm2"))
 
-    @skip("Testing simulation only")
+    @skip("OpenQASM 3 is not fully supported yet")
     def test_select_3(self):
         Utils.for_all_circuits_in_directory(
             lambda circuit: ApiClient.select_device(circuit, 3),
