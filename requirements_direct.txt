@@ -1,4 +1,10 @@
+# directly installed and imported:
 matplotlib==3.10.3
 qiskit-optimization==0.6.1
-qiskit==1.4.3
 requests==2.32.4
+
+# directly imported but indirectly installed by qiskit-optimization:
+networkx==3.5
+numpy==2.3.1
+qiskit-algorithms==0.3.1
+qiskit==1.4.3
