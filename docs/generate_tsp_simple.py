@@ -1,3 +1,5 @@
+# simplified version of the TSP circuit generation code (src.evaluation.generation.tsp.TspCircuitGenerator)
+
 import qiskit
 from qiskit import qasm2
 from qiskit.primitives import Sampler

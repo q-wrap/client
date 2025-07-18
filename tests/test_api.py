@@ -1,4 +1,5 @@
 import os
+from http import HTTPStatus
 from typing import Callable
 from unittest import TestCase, skip
 
@@ -21,7 +22,7 @@ class Downloader:
 
             response = requests.get(url + file)
 
-            if response.status_code == 200:
+            if response.status_code == HTTPStatus.OK:
                 os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
                 with open(local_file_path, 'w+') as f:
                     f.write(response.text)
@@ -126,7 +127,7 @@ class ApiTest(TestCase):
             lambda circuit: ApiClient.simulate_circuit(circuit, "ionq", 2, "aria-1"),
             os.path.join(MQT_BENCH_FOLDER, "general"), "qaoa_indep_qiskit_3.qasm")
 
-    @skip("Simulation on IonQ Harmony currently takes very long")
+    @skip("Simulation on IonQ Harmony regularly fails after several minutes")
     def test_simulate_ionq_noisy_harmony(self):
         Utils.for_single_circuit(
             lambda circuit: ApiClient.simulate_circuit(circuit, "ionq", 2, "harmony"),
@@ -139,5 +140,8 @@ class ApiTest(TestCase):
 
 
 if __name__ == '__main__':
+    # download circuits in TEST_FOLDER
     Downloader.download_openqasm2_circuits()
     Downloader.download_openqasm3_circuits()
+
+    # circuits in MQT_BENCH_FOLDER must be downloaded manually

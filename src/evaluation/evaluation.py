@@ -47,8 +47,8 @@ def evaluate_counts(counts: dict[str, int], solutions: set[str]) -> tuple[int, i
     return correct_counts, all_counts, correct_counts / all_counts
 
 
-def evaluate_tsp(seed: int, devices: list[str] | None = None):
-    tsp = TspCircuitGenerator(2, seed)
+def evaluate_tsp(number_of_cities: int, seed: int | None = None, devices: list[str] | None = None):
+    tsp = TspCircuitGenerator(number_of_cities, seed)
     tsp_solution = tsp.solution_to_bitstrings(tsp.solve_by_brute_force())
     print(f"optimal solution: {tsp_solution}")
 
@@ -85,12 +85,12 @@ def evaluate_tsp_noisy(tsp: TspCircuitGenerator, tsp_solution: set[str], seed: i
         return
 
     # another optimizer, better for noisy simulations, not used
-    optimizer = SPSA
-    optimizer_iterations = 500
-    qaoa_iterations = 2
-    qubo_penalty = 250
-    optimizer_learning_rate = 0.3
-    optimizer_perturbation = 0.05
+    # optimizer = SPSA
+    # optimizer_iterations = 500
+    # qaoa_iterations = 2
+    # qubo_penalty = 250
+    # optimizer_learning_rate = 0.3
+    # optimizer_perturbation = 0.05
 
     # same optimizer as for ideal simulation, used for comparability
     optimizer = COBYLA
@@ -143,4 +143,4 @@ def evaluate_single_tsp(circuit: str, tsp: TspCircuitGenerator, tsp_solution: se
 
 if __name__ == '__main__':
     for seed in [123, 456, 789]:
-        evaluate_tsp(seed)
+        evaluate_tsp(2, seed)

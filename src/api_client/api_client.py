@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import requests
 
 
@@ -15,7 +17,7 @@ class ApiClient:
 
         response = requests.post(f"{cls.API_URL}/select", json=request_data)
 
-        if response.status_code != 200:
+        if response.status_code != HTTPStatus.OK:
             raise ValueError(f"Failed to select device: {response.status_code}\n{response.text}")
 
         return response.json()
@@ -37,7 +39,7 @@ class ApiClient:
 
         response = requests.post(f"{cls.API_URL}/simulate", json=request_data)
 
-        if response.status_code != 200:
+        if response.status_code != HTTPStatus.OK:
             raise ValueError(f"Failed to simulate circuit: {response.status_code}\n{response.text}")
 
         return response.json()

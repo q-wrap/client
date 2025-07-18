@@ -11,10 +11,8 @@ from qiskit_algorithms.optimizers import Optimizer, SPSA
 from qiskit_optimization.applications import Tsp
 from qiskit_optimization.converters import QuadraticProgramToQubo
 
-from .generator import CircuitGenerator
 
-
-class TspCircuitGenerator(CircuitGenerator):
+class TspCircuitGenerator:
     def __init__(self, number_of_cities: int, seed: int | None = None):
         self.instance = Tsp.create_random_instance(number_of_cities, seed=seed)
 
@@ -39,7 +37,6 @@ class TspCircuitGenerator(CircuitGenerator):
             qaoa = QAOA(sampler=Sampler(), optimizer=optimizer(
                 maxiter=optimizer_iterations,
             ), reps=qaoa_iterations)
-
 
         optimal_params = qaoa.compute_minimum_eigenvalue(operator).optimal_point
         circuit = qaoa.ansatz.assign_parameters(optimal_params)
