@@ -47,16 +47,20 @@ def evaluate_counts(counts: dict[str, int], solutions: set[str]) -> tuple[int, i
     return correct_counts, all_counts, correct_counts / all_counts
 
 
-def evaluate_tsp(seed: int):
+def evaluate_tsp(seed: int, devices: list[str] | None = None):
     tsp = TspCircuitGenerator(2, seed)
     tsp_solution = tsp.solution_to_bitstrings(tsp.solve_by_brute_force())
     print(f"optimal solution: {tsp_solution}")
 
-    evaluate_tsp_ideal(tsp, tsp_solution, seed)
-    evaluate_tsp_noisy(tsp, tsp_solution, seed)
+    evaluate_tsp_ideal(tsp, tsp_solution, seed, devices)
+    evaluate_tsp_noisy(tsp, tsp_solution, seed, devices)
 
 
-def evaluate_tsp_ideal(tsp: TspCircuitGenerator, tsp_solution: set[str], seed: int):
+def evaluate_tsp_ideal(tsp: TspCircuitGenerator, tsp_solution: set[str], seed: int, devices: list[str] | None = None):
+    if devices is not None and not set(devices).intersection(["ideal_ibm", "ideal_ionq"]):
+        print("skipping ideal simulation")
+        return
+
     optimizer = COBYLA
     optimizer_iterations = 500
     qaoa_iterations = 3
@@ -66,13 +70,20 @@ def evaluate_tsp_ideal(tsp: TspCircuitGenerator, tsp_solution: set[str], seed: i
     info = f"seed={seed}, opt={optimizer.__name__}, " \
            f"opt_iter={optimizer_iterations}, qaoa_iter={qaoa_iterations}, qubo_penalty={qubo_penalty}"
 
-    print(f"ideal simulation (IBM), {info}")
-    evaluate_single_tsp(circuit, tsp, tsp_solution, "ibm", title=f"ideal simulation (IBM), seed={seed}")
-    print(f"ideal simulation (IonQ), {info}")
-    evaluate_single_tsp(circuit, tsp, tsp_solution, "ionq", title=f"ideal simulation (IonQ), seed={seed}")
+    if devices is None or "ideal_ibm" in devices:
+        print(f"ideal simulation (IBM), {info}")
+        evaluate_single_tsp(circuit, tsp, tsp_solution, "ibm", title=f"ideal simulation (IBM), seed={seed}")
+    if devices is None or "ideal_ionq" in devices:
+        print(f"ideal simulation (IonQ), {info}")
+        evaluate_single_tsp(circuit, tsp, tsp_solution, "ionq", title=f"ideal simulation (IonQ), seed={seed}")
 
 
-def evaluate_tsp_noisy(tsp: TspCircuitGenerator, tsp_solution: set[str], seed: int):
+def evaluate_tsp_noisy(tsp: TspCircuitGenerator, tsp_solution: set[str], seed: int, devices: list[str] | None = None):
+    if devices is not None and not set(devices).intersection(
+            ["ibm_montreal", "ibm_washington", "ionq_aria1", "ionq_harmony", "iqm_apollo"]):
+        print("skipping noisy simulation")
+        return
+
     # another optimizer, better for noisy simulations, not used
     optimizer = SPSA
     optimizer_iterations = 500
@@ -96,18 +107,26 @@ def evaluate_tsp_noisy(tsp: TspCircuitGenerator, tsp_solution: set[str], seed: i
     if optimizer == SPSA:
         info += f", learning_rate={optimizer_learning_rate}, perturbation={optimizer_perturbation}"
 
-    print(f"IBM Montreal, {info}")
-    evaluate_single_tsp(circuit, tsp, tsp_solution, "ibm", "montreal",
-                        title=f"IBM Montreal, seed={seed}")
-    print(f"IBM Washington, {info}")
-    evaluate_single_tsp(circuit, tsp, tsp_solution, "ibm", "washington",
-                        title=f"IBM Washington, seed={seed}")
-    print(f"IonQ Aria 1, {info}")
-    evaluate_single_tsp(circuit, tsp, tsp_solution, "ionq", "aria-1",
-                        title=f"IonQ Aria 1, seed={seed}")
-    print(f"IQM Apollo, {info}")
-    evaluate_single_tsp(circuit, tsp, tsp_solution, "iqm", "apollo",
-                        title=f"IQM Apollo, seed={seed}")
+    if devices is None or "ibm_montreal" in devices:
+        print(f"IBM Montreal, {info}")
+        evaluate_single_tsp(circuit, tsp, tsp_solution, "ibm", "montreal",
+                            title=f"IBM Montreal, seed={seed}")
+    if devices is None or "ibm_washington" in devices:
+        print(f"IBM Washington, {info}")
+        evaluate_single_tsp(circuit, tsp, tsp_solution, "ibm", "washington",
+                            title=f"IBM Washington, seed={seed}")
+    if devices is None or "ionq_aria1" in devices:
+        print(f"IonQ Aria 1, {info}")
+        evaluate_single_tsp(circuit, tsp, tsp_solution, "ionq", "aria-1",
+                            title=f"IonQ Aria 1, seed={seed}")
+    if "ionq_harmony" in devices:  # skipped by default
+        print(f"IonQ Harmony, {info}")
+        evaluate_single_tsp(circuit, tsp, tsp_solution, "ionq", "harmony",
+                            title=f"IonQ Harmony, seed={seed}")
+    if devices is None or "iqm_apollo" in devices:
+        print(f"IQM Apollo, {info}")
+        evaluate_single_tsp(circuit, tsp, tsp_solution, "iqm", "apollo",
+                            title=f"IQM Apollo, seed={seed}")
 
 
 def evaluate_single_tsp(circuit: str, tsp: TspCircuitGenerator, tsp_solution: set[str],
