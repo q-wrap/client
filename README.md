@@ -1,7 +1,7 @@
 # Client for q-wrap
 
 This repository contains a client for the q-wrap API, allowing to test and evaluate the wrapper behind it.
-See the q-wrap repository for more information.
+See the [q-wrap repository](https://github.com/q-wrap/q-wrap) for more information.
 
 ## Installation
 
