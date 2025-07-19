@@ -5,8 +5,9 @@ See the q-wrap repository for more information.
 
 ## Installation
 
-Install Python 3.13 (or newer) on your system. You can download it from the
-[official Python website](https://www.python.org/downloads/).
+Install Python 3.13 or newer on your system. You can download it from the
+[official Python website](https://www.python.org/downloads/). You can also try earlier versions, but these are not
+tested for this application.
 
 Clone this repository, where `<path>` is the URL of this repository and `--depth 1` is optional:
 
@@ -18,7 +19,7 @@ Before you install the required packages, you should create and activate a virtu
 optional, and you are free to use another package manager like `uv` as well.
 
 ```bash
-python -m venv venv
+python -m venv venv  # Python 3.13 or newer
 
 # Windows
 venv\Scripts\activate
