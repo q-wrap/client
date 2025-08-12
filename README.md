@@ -56,3 +56,10 @@ If you want to execute the tests in `tests/test_api.py`, some additional files n
 The file `docs/generate_tsp_simple.py` contains a simplified version of the TSP circuit generation code which might 
 help in understanding the process. The evaluation code uses the class
 `src.evaluation.generation.tsp.TspCircuitGenerator`, instead, which mainly adds more parameters.
+
+---
+
+## Use of Generative AI
+
+The development of this project has been aided by generative artificial intelligence tools, namely GitHub Copilot and
+Microsoft Copilot, both based on the model GPT-4.
